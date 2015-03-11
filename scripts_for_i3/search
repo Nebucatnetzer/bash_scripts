@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ -f $HOME/.dmenurc ]; then
+  . $HOME/.dmenurc
+else
+  DMENU='dmenu -nb '#151617' -nf '#d8d8d8' -sb '#d8d8d8' -sf '#151617''
+fi
+
+GS=`cat ~/.gshist | $DMENU $*`
+[[ $GS = "" ]] && exit
+
+if grep -q "$GS" "$HOME/.gshist" ; then
+    echo already exists in history
+else
+    echo $GS >> ~/.gshist
+fi
+
+google-chrome-stable -new-window http://www.google.com/search?q="$GS"
+exit 0

@@ -1,0 +1,4 @@
+#!/bin/bash
+#exec terminator -x ssh nebucatnetzer@213.239.207.237
+ssh nebucatnetzer@213.239.207.237
+exit 0
