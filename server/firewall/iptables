@@ -1,0 +1,101 @@
+#!/bin/bash
+IPT=/sbin/iptables
+WAN="eth0"
+LAN="eth1"
+WANIP="5.172.137.57"
+GITIP="10.7.89.109"
+APACHEIP="10.7.89.100"
+PYTHONIP="10.7.89.106"
+
+/sbin/iptables-restore <<-EOF;
+
+*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+
+# eth0 is WAN interface, #eth1 is LAN interface
+-A POSTROUTING -o $WAN -j MASQUERADE
+
+# NAT pinhole: SSH for git server from WAN to LAN
+-A PREROUTING -p tcp -d $WANIP --dport 22 -j DNAT --to-destination $GITIP:22
+
+# NAT pinhole: HTTP from WAN to LAN
+-A PREROUTING -p tcp -m tcp -d $WANIP --dport 80 -j DNAT --to-destination $APACHEIP:80
+
+# NAT pinhole: HTTPS from WAN to LAN
+-A PREROUTING -p tcp -m tcp -d $WANIP --dport 443 -j DNAT --to-destination $APACHEIP:443
+
+# NAT pinhole: SSH for python server from WAN to LAN
+-A PREROUTING -p tcp -m tcp -d $WANIP --dport 2323 -j DNAT --to-destination $PYTHONIP:2323
+
+# NAT pinhole: Mosh UDP on port 60000-60010 from WAN to LAN
+-A PREROUTING -p udp -m udp -d $WANIP --dport 60000:60010 -j DNAT --to-destination $PYTHONIP:60000-60010
+
+# Rules to be able to use all the services from inside the LAN otherwise they only
+# work from outside
+-A POSTROUTING -p tcp -d $GITIP --dport 22 -j SNAT --to-source $WANIP
+-A POSTROUTING -p tcp -d $APACHEIP --dport 80 -j SNAT --to-source $WANIP
+-A POSTROUTING -p tcp -d $APACHEIP --dport 443 -j SNAT --to-source $WANIP
+-A POSTROUTING -p tcp -d $PYTHONIP --dport 2323 -j SNAT --to-source $WANIP
+-A POSTROUTING -p tcp -d $PYTHONIP --dport 60000:60010 -j SNAT --to-source $WANIP
+COMMIT
+
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+
+#### Service rules ####
+# basic global accept rules - ICMP, loopback, traceroute, established all accepted
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -m state --state ESTABLISHED -j ACCEPT
+
+# Open port 1194 to reach the OpenVPN service on the firewall
+-A INPUT -p udp -m udp --dport 1194 -j ACCEPT
+
+# enable traceroute rejections to get sent out
+-A INPUT -p udp -m udp --dport 33434:33523 -j REJECT --reject-with icmp-port-unreachable
+
+# SSH - accept from LAN
+-A INPUT -i $LAN -p tcp --dport 2222 -j ACCEPT
+
+# drop all other inbound traffic
+-A INPUT -j DROP
+
+#### Forwarding rules ####
+
+# forward packets along established/related connections
+-A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+# forward from LAN (eth1) to WAN (eth0)
+-A FORWARD -i $LAN -o $WAN -j ACCEPT
+
+# forward from the VPN (tun0) to WAN (eth0)
+-A FORWARD -i tun0 -o $WAN -j ACCEPT
+# allow traffic from the LAN trough the VPN to the outside world
+-A FORWARD -i tun0 -o $LAN -j ACCEPT
+
+# allow traffic from port 22
+-A FORWARD -p tcp -d $GITIP --dport 22 -j ACCEPT
+
+# allow traffic from port 80
+-A FORWARD -p tcp -d $APACHEIP --dport 80 -j ACCEPT
+
+# allow traffic from port 443
+-A FORWARD -p tcp -d $APACHEIP --dport 443 -j ACCEPT
+
+# allow traffic from port 2323
+-A FORWARD -p tcp -d $PYTHONIP --dport 2323 -j ACCEPT
+
+# allow traffic from port 60000-60010
+-A FORWARD -p udp -d $PYTHONIP --dport 60000:60010 -j ACCEPT
+
+# drop all other forwarded traffic
+-A FORWARD -j DROP
+COMMIT
+EOF
+
+echo "done."
