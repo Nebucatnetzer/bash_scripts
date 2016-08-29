@@ -5,4 +5,4 @@ export BORG_PASSPHRASE=Password
 
 borg create -v --stats ::$(hostname)_$(date -I) /home/andreas/
 
-borg prune --prefix $(hostname)_201 --keep-daily=7 --keep-weekly=4 --keep-monthly=12 --keep-yearly=1
+borg prune -v --stats --prefix $(hostname)_201 --keep-daily=7 --keep-weekly=4 --keep-monthly=12 --keep-yearly=1
