@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import os
-import borg_variables
 import sys
 import configparser
 
-chosen_activity = 100
+chosen_activity = None
+mount_point = None
 
 # setup the config parser
 config = configparser.ConfigParser()
@@ -24,7 +24,7 @@ password = config['DEFAULT']['password']
 
 # set the environment variables
 os.environ['BORG_REPO'] = repository
-os.environ['BORG_PASSPHRASE'] = str(borg_variables.password)
+os.environ['BORG_PASSPHRASE'] = password
 
 # The main menu starts there
 while chosen_activity != 0:
@@ -49,7 +49,17 @@ while chosen_activity != 0:
             if not os.path.exists(mount_point):
                     os.makedirs(mount_point)
             os.system('borg mount  ::' + archive_name + " " + mount_point)
-        elif chosen_activity == 0:
             print()
+            print("Archive mounted at " + mount_point + "/")
+            print()
+        elif chosen_activity == 0:
+            if (not mount_point):
+                print()
+            else:
+                print()
+                print("Unmount Archive and remove folder.")
+                print()
+                os.system('fusermount -u' + " " + mount_point)
+                os.rmdir(mount_point)
     except ValueError:
         print("Please enter a full number.")
