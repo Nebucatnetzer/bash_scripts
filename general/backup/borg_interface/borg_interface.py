@@ -6,8 +6,24 @@ import configparser
 
 chosen_activity = 100
 
-# Setting the environment variables
-os.environ['BORG_REPO'] = str(borg_variables.repository)
+# setup the config parser
+config = configparser.ConfigParser()
+
+# read config file
+config.read('borg_interface.cfg')
+
+# assign the repository variable
+repository = (config['DEFAULT']['user']
+             + "@"
+             + config['DEFAULT']['server']
+             + ":"
+             + config['DEFAULT']['repository_path'])
+
+# assign the password variable
+password = config['DEFAULT']['password']
+
+# set the environment variables
+os.environ['BORG_REPO'] = repository
 os.environ['BORG_PASSPHRASE'] = str(borg_variables.password)
 
 # The main menu starts there
@@ -16,7 +32,7 @@ while chosen_activity != 0:
     # Start the chosen activity and go back to the activity selector.
     print("1: List Backups, 2: Show archive details, 3: Mount Archive, 0: Exit")
     try:
-        chosen_activity = int(input("Choose the desired activity:"))
+        chosen_activity = int(input("Choose the desired activity: "))
         if chosen_activity == 1:
             # prints all the archives in the repository and lists them with
             # less
@@ -36,4 +52,4 @@ while chosen_activity != 0:
         elif chosen_activity == 0:
             print()
     except ValueError:
-        print("test")
+        print("Please enter a full number.")
