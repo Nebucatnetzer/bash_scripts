@@ -2,6 +2,7 @@
 import os
 import sys
 import configparser
+import subprocess
 
 chosen_activity = None
 mount_point = None
@@ -63,8 +64,11 @@ while chosen_activity != 0:
             working_directory = os.system('pwd')
             if not os.path.exists(restore_path):
                 os.makedirs(restore_path)
-            os.chdir(restore_path)
-            os.system('borg extract -v --list ::'+ archive_name)
+            p = subprocess.Popen(['borg', 'extract' '-v' '--list' '::'
+                + archive_name]
+                , cwd=restore_path)
+            p.wait()
+            os.system(''+ archive_name)
             os.system(working_directory)
         elif chosen_activity == 0:
             if (not mount_point):
