@@ -65,11 +65,8 @@ while chosen_activity != 0:
             if not os.path.exists(restore_path):
                 os.makedirs(restore_path)
             p = subprocess.Popen(['borg', 'extract' '-v' '--list' '::'
-                + archive_name]
-                , cwd=restore_path)
+                + archive_name], cwd=restore_path)
             p.wait()
-            os.system(''+ archive_name)
-            os.system(working_directory)
         elif chosen_activity == 0:
             if (not mount_point):
                 print()
