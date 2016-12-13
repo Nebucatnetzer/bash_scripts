@@ -60,10 +60,8 @@ while chosen_activity != 0:
             archive_name = input("Please enter the archive name: ")
             restore_path = input("Please enter the path where you want to "
                                  "restore to")
-            os.system('borg extract -v --list ::'
-                      + archive_name
-                      + " "
-                      + restore_path)
+            os.chdir(restore_path)
+            os.system('borg extract -v --list ::'+ archive_name)
         elif chosen_activity == 0:
             if (not mount_point):
                 print()
