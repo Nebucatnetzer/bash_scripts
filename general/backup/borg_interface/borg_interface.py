@@ -64,7 +64,7 @@ while chosen_activity != 0:
             working_directory = os.system('pwd')
             if not os.path.exists(restore_path):
                 os.makedirs(restore_path)
-            p = subprocess.Popen(['borg', 'extract' '-v' '--list' '::'
+            p = subprocess.Popen(['borg', 'extract', '-v', '--list', '::'
                 + archive_name], cwd=restore_path)
             p.wait()
         elif chosen_activity == 0:
