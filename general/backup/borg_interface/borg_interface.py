@@ -33,8 +33,8 @@ os.environ['BORG_PASSPHRASE'] = password
 while chosen_activity != 0:
     print("What would you like to do?")
     # Start the chosen activity and go back to the activity selector.
-    print("1: List Backups, 2: Show archive details, 3: Mount Archive,")
-    print("4: Restore Backup, 0: Exit")
+    print("1: List Backups, 2: Show archive details, 3: Mount Archive,"
+          "4: Restore Backup, 0: Exit")
     try:
         chosen_activity = int(input("Choose the desired activity: "))
         if chosen_activity == 1:
@@ -58,8 +58,8 @@ while chosen_activity != 0:
             print()
         if chosen_activity == 4:
             archive_name = input("Please enter the archive name: ")
-            restore_path = input("Please enter the path where you want to\
-                                 restore to")
+            restore_path = input("Please enter the path where you want to"
+                                 "restore to")
             os.system('borg extract -v --list ::'
                       + archive_name
                       + " "
