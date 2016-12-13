@@ -13,11 +13,14 @@ config = configparser.ConfigParser()
 config.read('borg_interface.cfg')
 
 # assign the repository variable
-repository = (config['DEFAULT']['user']
-             + "@"
-             + config['DEFAULT']['server']
-             + ":"
-             + config['DEFAULT']['repository_path'])
+if 'server' in config:
+    repository = (config['DEFAULT']['user']
+                 + "@"
+                 + config['DEFAULT']['server']
+                 + ":"
+                 + config['DEFAULT']['repository_path'])
+else:
+    repository = config['DEFAULT']['repository_path']
 
 # assign the password variable
 password = config['DEFAULT']['password']
@@ -30,8 +33,8 @@ os.environ['BORG_PASSPHRASE'] = password
 while chosen_activity != 0:
     print("What would you like to do?")
     # Start the chosen activity and go back to the activity selector.
-    print("1: List Backups, 2: Show archive details, 3: Mount Archive,\
-          4: Restore Backup, 0: Exit")
+    print("1: List Backups, 2: Show archive details, 3: Mount Archive,")
+    print("4: Restore Backup, 0: Exit")
     try:
         chosen_activity = int(input("Choose the desired activity: "))
         if chosen_activity == 1:
